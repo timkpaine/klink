@@ -1,6 +1,7 @@
-klink API
-=========
+# API
 
+
+```{eval-rst}
 :mod:`klink` Package
 --------------------
 
@@ -14,3 +15,4 @@ klink API
     :members:
     :undoc-members:
     :show-inheritance:
+```

@@ -1,7 +1,18 @@
 import os
 import re
 import shutil
+from pathlib import Path
 from subprocess import call
+
+__all__ = (
+    "convert_notebooks",
+    "get_html_theme_path",
+    "setup",
+)
+
+
+def setup(app):
+    app.add_html_theme("klink", Path(__file__).resolve().parent)
 
 
 def convert_notebooks():
@@ -84,6 +95,4 @@ def get_html_theme_path():
     return cur_dir
 
 
-VERSION = (0, 1, 10)
-__version__ = ".".join(str(v) for v in VERSION)
-__version_full__ = __version__
+__version__ = "0.1.10"

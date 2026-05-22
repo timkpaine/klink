@@ -1,0 +1,13 @@
+# Changes here will be overwritten by Copier
+_commit: b5fb449
+_src_path: https://github.com/python-project-templates/base.git
+add_docs: true
+add_extension: python
+add_wiki: false
+email: morissette.philippe@gmail.com
+github: pmorissette
+project_description: Klink is a simple and clean theme for creating Sphinx docs, inspired
+    by jrnl
+project_name: klink
+python_version_primary: '3.11'
+team: Philippe Morissette

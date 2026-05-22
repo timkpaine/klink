@@ -1,17 +1,159 @@
-[tool.isort]
-combine_as_imports = true
-include_trailing_comma = true
-line_length = 180
-profile = "black"
+[build-system]
+requires = [
+    "hatchling",
+]
+build-backend = "hatchling.build"
 
-default_section = "THIRDPARTY"
-sections = "FUTURE,THIRDPARTY,FIRSTPARTY,LOCALFOLDER"
+[project]
+name = "klink"
+authors = [
+    {name = "Philippe Morissette", email = "morissette.philippe@gmail.com"},
+]
+description = "Klink is a simple and clean theme for creating Sphinx docs, inspired by jrnl"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+version = "0.1.0"
+requires-python = ">=3.10"
+keywords = []
 
-known_first_party = "klink"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
 
+dependencies = [
+    "sphinx",
+]
+
+[project.entry-points."sphinx.html_themes"]
+klink = "klink"
+
+[project.optional-dependencies]
+develop = [
+    "build",
+    "bump-my-version",
+    "check-dist",
+    "codespell",
+    "hatchling",
+    "mdformat",
+    "mdformat-tables>=1",
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "twine",
+    "ty",
+    "uv",
+    "wheel",
+]
+
+[project.scripts]
+
+[project.urls]
+Repository = "https://github.com/pmorissette/klink"
+Homepage = "https://github.com/pmorissette/klink"
+
+[tool.bumpversion]
+current_version = "0.1.0"
+commit = true
+tag = true
+commit_args = "-s"
+
+[[tool.bumpversion.files]]
+filename = "klink/__init__.py"
+search = '__version__ = "{current_version}"'
+replace = '__version__ = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
+
+[tool.coverage.run]
+branch = true
+omit = [
+    "klink/tests/integration/",
+]
+
+[tool.coverage.report]
+exclude_also = [
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "@(abc\\.)?abstractmethod",
+]
+ignore_errors = true
+fail_under = 50
+
+[tool.hatch.build]
+artifacts = []
+
+[tool.hatch.build.sources]
+src = "/"
+
+[tool.hatch.build.targets.sdist]
+packages = [
+    "klink",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "klink",
+]
+
+[tool.hatch.build.targets.wheel.shared-data]
+
+[tool.pytest.ini_options]
+addopts = [
+    "-vvv",
+    "--junitxml=junit.xml",
+]
+testpaths = "klink/tests"
 
 [tool.ruff]
-line-length = 180
+line-length = 150
+
+[tool.ruff.lint]
+extend-select = [
+    "I",
+]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+default-section = "third-party"
+known-first-party = [
+    "klink",
+]
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "first-party",
+    "local-folder",
+]
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401", "F403"]
+"__init__.py" = [
+    "F401",
+    "F403",
+]
+
+[tool.yardang]
+title = "klink"
+theme = "klink"
+root = "docs/src/overview.md"
+pages = [
+    "docs/src/overview.md",
+    "docs/src/install.md",
+    "docs/src/examples.md",
+    "docs/src/klink.md",
+]
+use-autoapi = false
+
+html_theme_options = {"logo"= "img/logo.png", "favicon"= "img/favicon.ico"}

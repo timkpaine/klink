@@ -1,46 +1,132 @@
-TMPREPO=/tmp/docs/klink
+#########
+# BUILD #
+#########
+.PHONY: develop build install
 
-.PHONY: clean css docs serve pages dist develop lint fix
+develop:  ## install dependencies and build library
+	uv pip install -e .[develop]
 
-develop:
-	python -m pip install -e .[dev]
-	python -m pip install nbconvert
-
-lint:
-	python -m isort --check klink setup.py docs/source/conf.py
-	python -m ruff check klink setup.py docs/source/conf.py
-	python -m ruff format --check klink setup.py docs/source/conf.py
-
-fix:
-	python -m isort klink setup.py docs/source/conf.py
-	python -m ruff format klink setup.py docs/source/conf.py
-
-clean:
-	- rm -rf build
-	- rm -rf dist
+requirements:  ## install prerequisite python build requirements
+	python -m pip install --upgrade pip toml
+	python -m pip install `python -c 'import toml; c = toml.load("pyproject.toml"); print("\n".join(c["build-system"]["requires"]))'`
+	python -m pip install `python -c 'import toml; c = toml.load("pyproject.toml"); print(" ".join(c["project"]["optional-dependencies"]["develop"]))'`
 
 css:
 	lessc klink/less/klink.less klink/static/css/klink.css
-	cp klink/static/css/klink.css docs/build/html/_static/css/klink.css
 
-docs: 
-	$(MAKE) -C docs/ clean
-	$(MAKE) -C docs/ html 
-	$(MAKE) css 
+build: css  ## build the python library
+	python -m build -n
 
-serve:
-	cd docs/build/html; \
-	python -m http.server 9090
+install:  ## install library
+	uv pip install .
 
-pages:
-	- rm -rf $(TMPREPO)
-	git clone -b gh-pages git@github.com:pmorissette/klink.git $(TMPREPO)
-	rm -rf $(TMPREPO)/*
-	cp -r docs/build/html/* $(TMPREPO)
-	cd $(TMPREPO); \
-	git add -A ; \
-	git commit -a -m 'auto-updating docs' ; \
-	git push
+#########
+# LINTS #
+#########
+.PHONY: lint-py lint-docs fix-py fix-docs lint lints fix format
 
-dist:
-	python setup.py sdist upload
+lint-py:  ## lint python with ruff
+	python -m ruff check klink
+	python -m ruff format --check klink
+
+lint-docs:  ## lint docs with mdformat and codespell
+	python -m mdformat --check README.md
+	python -m codespell_lib README.md
+
+fix-py:  ## autoformat python code with ruff
+	python -m ruff check --fix klink
+	python -m ruff format klink
+
+fix-docs:  ## autoformat docs with mdformat and codespell
+	python -m mdformat README.md
+	python -m codespell_lib --write README.md
+
+lint: lint-py lint-docs  ## run all linters
+lints: lint
+fix: fix-py fix-docs  ## run all autoformatters
+format: fix
+
+################
+# Other Checks #
+################
+.PHONY: check-dist check-types checks check
+
+check-dist:  ## check python sdist and wheel with check-dist
+	check-dist -v
+
+check-types:  ## check python types with ty
+	ty check --python $$(which python)
+
+checks: check-dist
+
+# Alias
+check: checks
+
+#########
+# TESTS #
+#########
+.PHONY: test coverage tests
+
+test:  ## run python tests
+	python -m pytest -v klink/tests
+
+coverage:  ## run tests and collect test coverage
+	python -m pytest -v klink/tests --cov=klink --cov-report term-missing --cov-report xml
+
+# Alias
+tests: test
+
+###########
+# VERSION #
+###########
+.PHONY: show-version patch minor major
+
+show-version:  ## show current library version
+	@bump-my-version show current_version
+
+patch:  ## bump a patch version
+	@bump-my-version bump patch
+
+minor:  ## bump a minor version
+	@bump-my-version bump minor
+
+major:  ## bump a major version
+	@bump-my-version bump major
+
+########
+# DIST #
+########
+.PHONY: dist dist-build dist-sdist dist-local-wheel publish
+
+dist-build:  # build python dists
+	python -m build -w -s
+
+dist-check:  ## run python dist checker with twine
+	python -m twine check dist/*
+
+dist: clean dist-build dist-check  ## build all dists
+
+publish: dist  ## publish python assets
+
+#########
+# CLEAN #
+#########
+.PHONY: deep-clean clean
+
+deep-clean: ## clean everything from the repository
+	git clean -fdx
+
+clean: ## clean the repository
+	rm -rf .coverage coverage cover htmlcov logs build dist *.egg-info
+
+############################################################################################
+
+.PHONY: help
+
+# Thanks to Francoise at marmelab.com for this
+.DEFAULT_GOAL := help
+help:
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+print-%:
+	@echo '$*=$($*)'
